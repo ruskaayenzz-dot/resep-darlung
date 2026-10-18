@@ -1,0 +1,235 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BY PUTRA — RANSOM NIGHTMARE</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #050000;
+  color: #ff1616;
+  font-family: "Courier New", monospace;
+}
+
+#screen {
+  height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 17px;
+  text-align: center;
+  background: radial-gradient(ellipse, #300000, #080000 65%, #000);
+  transition: background .12s;
+}
+
+h1 {
+  font-size: clamp(35px, 10vw, 65px);
+  margin: 10px 0;
+  text-shadow: 0 0 10px red, 0 0 30px #f00;
+  animation: flicker .7s infinite;
+}
+
+#warning {
+  width: 100%;
+  font-size: clamp(19px, 5.5vw, 29px);
+  font-weight: bold;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  text-shadow: 0 0 14px red;
+}
+
+.meta {
+  color: #eee;
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+#timer {
+  margin-top: 18px;
+  color: #ff5555;
+  font-size: 13px;
+}
+
+#stop {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  z-index: 99;
+  font: bold 11px monospace;
+  padding: 8px 12px;
+  color: white;
+  background: #222;
+  border: 1px solid #777;
+  border-radius: 4px;
+}
+
+.glitch {
+  animation: glitch .12s infinite;
+}
+
+.shake {
+  animation: shake .12s infinite;
+}
+
+@keyframes flicker {
+  0%, 90%, 100% { opacity: 1; }
+  92% { opacity: .45; }
+  95% { opacity: .8; }
+}
+
+@keyframes glitch {
+  0% { transform: translate(0); }
+  25% { transform: translate(2px, -1px); }
+  50% { transform: translate(-2px, 1px); }
+  75% { transform: translate(1px, 2px); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(3px, -2px); }
+  50% { transform: translate(-3px, 2px); }
+  75% { transform: translate(2px, 2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+  }
+}
+</style>
+</head>
+
+<body>
+<main id="screen">
+  <div class="meta">/// BY PUTRA SECURITY TERMINAL ///</div>
+  <h1 class="glitch">BY PUTRA</h1>
+  <div class="meta">DEBT ALERT • UNKNOWN TRANSMISSION</div>
+
+  <p id="warning">
+    PERHATIAN!<br>
+    PESAN PEMBAYARAN TELAH DITERIMA.
+  </p>
+
+  <div id="timer">STATUS: MENUNGGU RESPONS</div>
+  <p class="meta">HORROR VISUAL EXPERIENCE</p>
+</main>
+
+<button id="stop" type="button">STOP</button>
+
+<script>
+const screen = document.getElementById("screen");
+const warning = document.getElementById("warning");
+const timer = document.getElementById("timer");
+const stopButton = document.getElementById("stop");
+
+const messages = [
+  "PERINGATAN PEMBAYARAN UTANG!",
+  "ANDA MASIH MEMILIKI KEWAJIBAN YANG BELUM DISELESAIKAN.",
+  "JANGAN ABAIKAN PESAN INI. SEGERA PERIKSA TAGIHAN ANDA.",
+  "WAKTU TERUS BERJALAN. SELESAIKAN KEWAJIBAN DENGAN BAIK.",
+  "HUTANG TIDAK HILANG HANYA KARENA DIABAIKAN.",
+  "HUBUNGI PIHAK TERKAIT UNTUK MEMBAHAS PEMBAYARAN.",
+  "JANGAN PANIK. PERIKSA INFORMASI DAN BUKTI TAGIHAN.",
+  "BY PUTRA — TRANSMISI PERINGATAN AKTIF.",
+  "SEGERA CARI SOLUSI PEMBAYARAN YANG DISEPAKATI."
+];
+
+let index = 0;
+let running = true;
+let messageTimer;
+let colorTimer;
+let audioContext;
+let oscillator;
+let gain;
+
+function nextMessage() {
+  if (!running) return;
+
+  warning.textContent = messages[index % messages.length];
+  timer.textContent =
+    "STATUS: ALERT " + String(index + 1).padStart(2, "0");
+
+  index++;
+  messageTimer = setTimeout(nextMessage, 2300);
+}
+
+function visualEffects() {
+  if (!running) return;
+
+  screen.classList.toggle("shake");
+  screen.style.background =
+    Math.random() > 0.65
+      ? "radial-gradient(ellipse, #550000, #080000 70%)"
+      : "radial-gradient(ellipse, #240000, #030303 70%)";
+
+  colorTimer = setTimeout(visualEffects, 350);
+}
+
+function startSound() {
+  // Browser membutuhkan interaksi pengguna untuk memulai audio.
+  try {
+    audioContext = new (window.AudioContext ||
+      window.webkitAudioContext)();
+
+    oscillator = audioContext.createOscillator();
+    gain = audioContext.createGain();
+
+    oscillator.type = "sawtooth";
+    oscillator.frequency.value = 85;
+    gain.gain.value = 0.025;
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+    oscillator.start();
+  } catch (error) {
+    console.log("Audio tidak tersedia.");
+  }
+}
+
+function stopAll() {
+  if (!running) return;
+  running = false;
+
+  clearTimeout(messageTimer);
+  clearTimeout(colorTimer);
+
+  screen.classList.remove("shake");
+  screen.style.background = "#050000";
+
+  if (oscillator) {
+    try { oscillator.stop(); } catch (error) {}
+    oscillator.disconnect();
+    oscillator = null;
+  }
+
+  if (audioContext) {
+    audioContext.close();
+    audioContext = null;
+  }
+
+  warning.textContent = "EFEK TELAH DIHENTIKAN.";
+  timer.textContent = "STATUS: NONAKTIF";
+  stopButton.textContent = "STOPPED";
+}
+
+stopButton.addEventListener("click", stopAll);
+window.addEventListener("pagehide", stopAll);
+
+// Efek visual mulai otomatis saat halaman dibuka.
+nextMessage();
+visualEffects();
+
+// Audio tidak dipaksa berjalan tanpa izin/interaksi pengguna.
+screen.addEventListener("click", startSound, { once: true });
+</script>
+</body>
+</html>
